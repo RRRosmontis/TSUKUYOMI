@@ -33,12 +33,24 @@
 
 按“只收源码与配置”处理，以下内容**不在仓库内**：
 
-- 二进制：`danmaku/dist/danmaku.exe`（48.6 MB）、`SRS/objs/srs.exe`（35 MB）、`SRS/uninst.exe`
+- 二进制：`SRS/objs/srs.exe`（35 MB）、`SRS/uninst.exe`（`danmaku/dist/danmaku.exe` 例外，见下）
 - 运行日志：`*.log`（含 SRS 侧约 330 MB 的 nssm 日志、danmaku/live2d/live-api 日志）
 - 运行时产物：`__pycache__/`、`*.pyc`、`*.db`（`live.db`、`live-api/live.db`）
 - 备份文件：`*.bak`、`*.bak.*`、`*.before-*`（`srs.conf.bak.202610102145`、`live_api.py.bak.20260927174500`、`run-8000backend.bat.bak`、`config.before-secondary-20261007-1840.bak`、`config.json.before-443-20261007-201756` 共 5 个，已从仓库删除并写入 `.gitignore`）
 - 构建目录：`SRS/objs/`（Cygwin 运行库与编译输出）
 - 两个上游仓库的 `.git/`（本仓库是全新历史）
+
+## 刻意保留的二进制：`danmaku/dist/danmaku.exe`
+
+| 项 | 值 |
+|---|---|
+| 大小 | 48,642,775 B（约 46.4 MiB） |
+| 类型 | PE32+ GUI x86-64（PyInstaller 打包产物） |
+| 来源 | `tsukuyomi-danmaku@9258dce:dist/danmaku.exe` |
+| blob sha1 | `f1c983388e29308f95908b62e11f0f3022d6970d`（与上游 blob 逐字节一致） |
+| sha256 | `9146457bf9f95d725463e41c1a73e7c2c4416d7a1f7f9e3179f507ff01f5cf4c` |
+
+这是**唯一入库的 exe**：`.gitignore` 的 `*.exe` 规则仍拦截其他可执行文件，本文件通过 `!danmaku/dist/danmaku.exe` 例外规则显式放行。重新打包可用同目录的 `danmaku.spec`；若产物有变化，记得同步更新上表的校验值。
 
 ## 已清空的敏感文件（保留空文件占位）
 
@@ -72,4 +84,4 @@ git add -A && git commit -m "..." && git push
 
 1. 本仓库为**公开**仓库，提交前务必确认没有把凭据带回来（上表中的占位文件保持 0 字节）。
 2. `backends/windows/SRS/conf/srs.conf` 是线上在用的 SRS 配置，含 http_hooks 回调地址等部署参数，公开可见，修改前请复核是否含敏感值。
-3. `.gitignore` 已拦截 `*.log`、`*.db`、`*.pyc`、`*.exe`、`objs/`、`*.bak`、`*.bak.*`、`*.before-*`。
+3. `.gitignore` 已拦截 `*.log`、`*.db`、`*.pyc`、`*.exe`（`danmaku/dist/danmaku.exe` 为例外）、`objs/`、`*.bak`、`*.bak.*`、`*.before-*`。

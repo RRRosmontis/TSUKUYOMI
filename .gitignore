@@ -17,3 +17,6 @@ objs/
 # 系统杂物
 .DS_Store
 Thumbs.db
+
+# 例外：danmaku 发布产物需要入库
+!danmaku/dist/danmaku.exe
