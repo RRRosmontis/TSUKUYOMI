@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TSUKUYOMI SLM — ANCHOR CONSOLE · 主播认证</title>
+<meta name="description" content="TSUKUYOMI 主播注册认证 · SLM Streaming">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000'/><text x='16' y='23' font-family='monospace' font-size='20' fill='%23fff' text-anchor='middle'>R</text></svg>">
+<link rel="stylesheet" href="https://rosmanka.rrrosmontis.icu/fonts/fonts.css">
+<link rel="stylesheet" href="css/live.css?v=7">
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-vignette"></div>
+<div class="bg-scan"></div>
+
+<div id="gate" class="gate-wrap" style="display:none">
+  <div class="gate">
+    <div class="term-bar">
+      <i></i><i></i><i></i>
+      <b>tsukuyomi-slm — anchor gate — 80×24</b>
+    </div>
+    <div class="gate-body">
+      <img src="https://cdn.rrrosmontis.icu/tsukuyomi/main-logo.png" alt="TSUKUYOMI">
+      <div class="prompt-line"><span class="prompt">$ slm auth --anchor</span></div>
+      <h2>Anchor Registration</h2>
+      <p class="zh">主播注册认证走 ROSMANKA ID 统一登录。<br>申请房间号后由管理员审批发放推流码。</p>
+      <button class="btn primary" id="gateLoginBtn">AUTHENTICATE · 使用 ROSMANKA ID 登录 →</button>
+      <div class="sub">GLOBAL ROSMANKA CLOUD NEXUS INC.</div>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <header>
+    <div class="nav">
+      <a class="brand" href="https://rosmanka.rrrosmontis.icu/">
+        <img class="brand-logo" src="https://cdn.rrrosmontis.icu/rosmanka/logo-white.png" alt="Rosmanka Inc. · Global Cloud Nexus">
+      </a>
+      <span class="nav-tag">TSUKUYOMI / ANCHOR</span>
+      <a class="nav-btn ghost" href="https://rosmanka.rrrosmontis.icu/services/slm/">返回 SLM</a>
+      <button class="nav-btn solid" id="logoutBtn">登出</button>
+      <span class="nav-clock" id="utc-clock">UTC --:--:--</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="hero-top">
+        <div class="hero-left">
+          <div class="kicker">SLM-ANCHOR / 配信者登録<span class="blink">_</span></div>
+          <h1 class="page-title">
+            <span class="row"><span>ANCHOR</span></span>
+            <span class="row"><span>CONSOLE.</span></span>
+          </h1>
+        </div>
+        <img class="hero-logo" src="https://cdn.rrrosmontis.icu/tsukuyomi/main-logo.png" alt="TSUKUYOMI">
+      </div>
+      <p class="page-zh">月下的实况之海 · 推流者在此点灯</p>
+      <p class="page-note">房间号申请后不可更改，主副站通用，三个月未直播将自动吊销。</p>
+    </div>
+
+    <div class="grid">
+      <!-- C-01 身份 -->
+      <div class="card c4">
+        <div class="card-idx">C-01 / IDENTITY</div>
+        <h3>身份信息</h3>
+        <div class="kv"><span class="k">用户名</span><span class="v" id="meNickname">—</span></div>
+        <div class="kv"><span class="k">ID</span><span class="v" id="meUid">—</span></div>
+        <div class="kv"><span class="k">邮箱</span><span class="v" id="meEmail">—</span></div>
+        <div class="kv"><span class="k">直播服务</span><span class="v"><span class="badge warn" id="meTier">—</span></span></div>
+      </div>
+
+      <!-- C-02 主播资格 -->
+      <div class="card c8">
+        <div class="card-idx">C-02 / ANCHOR STATUS</div>
+        <h3>主播资格</h3>
+        <div id="anchorBox"><div class="dim mono">加载中…</div></div>
+      </div>
+
+      <!-- C-03 直播数据 -->
+      <div class="card c12">
+        <div class="card-idx">C-03 / RECORDS</div>
+        <h3>直播数据</h3>
+        <div class="grid">
+          <div class="c4" style="padding:6px 0">
+            <div class="stat-big" id="statTotal">—</div>
+            <div class="stat-sub">直播总时长 TOTAL AIRTIME</div>
+          </div>
+          <div class="c4" style="padding:6px 0">
+            <div class="stat-big" id="statCount">—</div>
+            <div class="stat-sub">开播场次 SESSIONS</div>
+          </div>
+          <div class="c4" style="padding:6px 0">
+            <div class="stat-big" id="statRoom">—</div>
+            <div class="stat-sub">房间号 ROOM</div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>开始 START</th><th>结束 END</th><th>站点 SITE</th><th>标题 TITLE</th><th>时长 DURATION</th><th>结束原因</th></tr></thead>
+            <tbody id="recordsBody"><tr><td colspan="6" class="dim">—</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- C-04 OBS 教程 -->
+      <div class="card c12">
+        <div class="card-idx">C-04 / GO LIVE</div>
+        <h3>开播教程 · OBS</h3>
+        <details class="tut" open>
+          <summary>OBS Studio 推流配置 · THREE STEPS</summary>
+          <div class="tut-body">
+            <h4>01 · 安装 OBS Studio</h4>
+            <p>从官网 <a href="https://obsproject.com/welcome" target="_blank" rel="noopener" style="color:var(--accent)">obsproject.com</a> 下载安装，谨防盗版。</p>
+            <h4>02 · 配置推流</h4>
+            <p>OBS 设置 → 直播 → 服务选择「自定义」，填入服务器地址与推流码：</p>
+            <p>[主站] 服务器 <code id="tutMainSrv">—</code>（内地 / 海外通用）</p>
+            <p>[副站] 服务器 <code id="tutSubSrv">—</code>（内地 / 海外通用）</p>
+            <p>推流码即主播资格卡中的整串（格式 <code>房间号?token=15位串码</code>），粘贴到 OBS「推流密钥」（仅审批通过后可见）。</p>
+            <h4>03 · 开始直播</h4>
+            <p>添加源 → 点击「开始直播」。观众在 <a href="https://live.rrrosmontis.icu/players/player.html" style="color:var(--accent)">直播间</a> 输入你的房间号即可观看。</p>
+            <h4>推流须知</h4>
+            <p>• 主 / 副站均推荐 720p/60fps；主站码率上限 3000kbps，副站码率上限 4000kbps</p>
+            <p>• 禁止直播违法违禁内容；直播可能被任何人观看，注意隐私</p>
+            <p class="note">• 房间号三个月以上未使用将被自动吊销；管理员有权随时中断直播</p>
+            <p>• 弹幕姬下载：<a href="https://cdn.rrrosmontis.icu/tsukuyomi/danmaku.exe" download style="color:var(--accent)">danmaku.exe</a></p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <div class="foot-inner">
+      <span>© 2026–∞ GLOBAL ROSMANKA CLOUD NEXUS INC. 保留一切权利。</span>
+      <span>TSUKUYOMI SLM · ANCHOR CONSOLE · <a href="https://rosmanka.rrrosmontis.icu/services/slm/">RETURN TO SLM</a></span>
+    </div>
+  </footer>
+</div>
+
+<script src="js/live-common.js?v=5"></script>
+<script src="js/anchor.js?v=10"></script>
+</body>
+</html>

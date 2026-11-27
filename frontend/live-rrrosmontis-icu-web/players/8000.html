@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>T S U K U Y O M I</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.rrrosmontis.icu/favicon-apple.png">
+    <link rel="icon" type="image/png" href="https://cdn.rrrosmontis.icu/favicon.png" sizes="64x64">
+
+    <!-- Live2D 核心库 -->
+    <script src="https://cdn.rrrosmontis.icu/tsukuyomi/8000/js/live2dcubismcore.min.js"></script>
+    <script src="https://cdn.rrrosmontis.icu/tsukuyomi/8000/js/pixi.min.js"></script>
+    <script src="https://cdn.rrrosmontis.icu/tsukuyomi/8000/js/cubism4.min.js"></script>
+
+    <!-- 辅助库 (仅布局) -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
+    <script type="text/javascript" src="js/jquery-1.12.2.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #5dade2;
+            --primary-glow: rgba(93, 173, 226, 0.4);
+            --bg-deep: #0a0e17;
+            --glass-bg: rgba(18, 24, 38, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            --text-main: #e2e8f0;
+            --text-sub: #94a3b8;
+            --accent-gold: #f1c40f;
+        }
+
+        html { touch-action: manipulation; scroll-behavior: smooth; }
+
+        @font-face {
+            font-family: 'Kazesawa-Regular';
+            src: url('https://cdn.rrrosmontis.icu/ttf-1.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        /* 动态星空背景 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(135deg, rgba(10, 14, 23, 0.88), rgba(26, 31, 56, 0.85)),
+                              url('https://cdn.rrrosmontis.icu/background-TSUKUYOMI.jpg');
+            background-size: cover; background-position: center; z-index: -1;
+        }
+
+        body {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; font-family: 'Kazesawa-Regular', sans-serif;
+            color: var(--text-main); overflow: hidden; background-color: var(--bg-deep);
+        }
+
+        /* 桌面隐藏移动元素 */
+        .topbar, .mobile-nav-row, .footer { display: none; }
+
+        /* 主布局 */
+        .main-content {
+            display: flex; flex-direction: row; width: 100%; height: 95vh;
+            padding: 20px; gap: 20px; align-items: stretch; z-index: 1;
+        }
+
+        /* 左侧玻璃面板 */
+        .land-left-box {
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+            flex: 1.4; background: var(--glass-bg); backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border); border-radius: 28px; padding: 30px 20px;
+            box-shadow: var(--glass-shadow); text-align: center; min-height: 0;
+        }
+
+        .land-top-text { margin-bottom: 20px; width: 100%; }
+
+        /* 右侧容器 (Live2D) */
+        .additional-box {
+            flex: 8.6; background: var(--glass-bg); backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border); border-radius: 28px; padding: 20px;
+            display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        /* video-wrapper 背景图改为 cover，确保移动端完整显示 */
+        .video-wrapper {
+            flex: 1;
+            background-color: #000;
+            background-image: url('https://cdn.rrrosmontis.icu/tsukuyomi/8000/8000bg.png');
+            background-size: cover;                /* 覆盖整个区域，避免黑边 */
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        #live2d-canvas {
+            width: 100%; height: 100%; display: block;
+            background: transparent;
+        }
+
+        /* 加载遮罩 */
+        .model-loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            background: transparent; color: white; font-size: 24px; text-align: center;
+            z-index: 10; pointer-events: none; font-family: 'Kazesawa-Regular', sans-serif;
+            animation: breatheGlow 2s ease-in-out infinite;
+            text-shadow: 0 0 10px #fff, 0 0 20px #5dade2;
+            padding: 20px; box-sizing: border-box;
+        }
+
+        @keyframes breatheGlow {
+            0% { opacity: 0.8; text-shadow: 0 0 5px #fff, 0 0 15px #5dade2; }
+            50% { opacity: 1; text-shadow: 0 0 20px #fff, 0 0 40px #5dade2, 0 0 60px #3b8fc2; }
+            100% { opacity: 0.8; text-shadow: 0 0 5px #fff, 0 0 15px #5dade2; }
+        }
+
+        /* 左侧文字 */
+        .land-title-main { font-size: 2.0rem; color: #fff; font-weight: 600; line-height: 1.2; text-shadow: 0 0 15px rgba(255,255,255,0.2); }
+        .land-title { font-size: 0.9rem; color: var(--text-sub); font-weight: 600; letter-spacing: 2px; }
+        .land-sub { font-size: 1rem; color: var(--accent-gold); font-weight: bold; margin-top: 8px; letter-spacing: 3px; }
+
+        /* 弹幕区域 */
+        .danmaku-container {
+            display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; margin-top: 12px;
+        }
+        .danmaku-list {
+            flex: 1; overflow-y: auto; background: rgba(10, 15, 25, 0.6); backdrop-filter: blur(4px);
+            border-radius: 20px; padding: 14px; border: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 14px; scrollbar-width: thin; scrollbar-color: var(--primary-color) rgba(255,255,255,0.1);
+        }
+        .danmaku-list::-webkit-scrollbar { width: 4px; }
+        .danmaku-list::-webkit-scrollbar-thumb { background-color: var(--primary-color); border-radius: 4px; }
+        .danmaku-item { display: flex; margin-bottom: 14px; font-size: 0.9rem; line-height: 1.45; text-align: left; word-break: break-word; animation: slideInFromRight 0.3s ease-out;}
+        .danmaku-avatar { width: 30px; height: 30px; border-radius: 50%; background: #3e5a76; margin-right: 12px; flex-shrink: 0; box-shadow: 0 0 8px rgba(93,173,226,0.3); }
+        .danmaku-content { flex: 1; }
+        .danmaku-user { font-weight: 600; color: var(--primary-color); margin-right: 6px; display: inline-block; }
+        .danmaku-text { color: #d8e2f0; display: inline; }
+
+        /* 输入区 — 修复垂直居中 */
+        .input-area {
+            display: flex;
+            align-items: center;           /* 确保垂直居中 */
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            border-radius: 60px;
+            padding: 6px 8px 6px 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .input-area input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+            padding: 8px 0;                /* 调整上下内边距 */
+            font-family: inherit;
+            margin: auto 0;                 /* 垂直居中保险 */
+            line-height: 1.2;               /* 确保文字垂直居中 */
+        }
+        .input-area input::placeholder { color: #a0b6cc; font-weight: 300; letter-spacing: 0.5px; }
+        .input-area input:read-only { color: #cfdfee; }
+
+        .send-btn {
+            width: 48px; height: 48px; border-radius: 50%; background: var(--primary-color);
+            border: none; display: flex; align-items: center; justify-content: center;
+            color: #0a0e17; font-size: 1.4rem; 
+            cursor: default; box-shadow: 0 0 20px var(--primary-glow); flex-shrink: 0;
+        }
+        .send-btn span { line-height: 1; }
+
+        .powered-footer { font-size: 0.75rem; color: var(--text-sub); text-align: center; letter-spacing: 0.8px; }
+        .powered-footer a { color: var(--primary-color); text-decoration: none; border-bottom: 1px dotted transparent; }
+        .powered-footer a:hover { border-bottom: 1px dotted var(--primary-color); }
+
+        /* --- 全屏用户名遮挡层 (纯色背景，不透明) --- */
+        .room-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0e17;           /* 纯色背景，不透明 */
+            z-index: 10000;
+            transition: opacity 3s ease;    /* 渐隐过渡 */
+            opacity: 1;
+        }
+        .room-overlay.fade-out {
+            opacity: 0;
+        }
+
+        .room-dialog {
+            position: absolute;
+            top: 20%;             
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 32px;
+            width: 90%;
+            max-width: 380px;
+            padding: 35px 25px;
+            text-align: center;
+            animation: dialogFadeUp 0.6s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .room-dialog img {
+            width: 100%;                      
+            margin-top: 3vh;                  
+            margin-bottom: 5vh;           
+        }
+        .room-dialog input.room-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            width: 90%;
+            text-align: center;
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.3s;
+            margin-bottom: 16px;              
+        }
+        .room-dialog input.room-input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+        .room-dialog .room-button {
+            background: var(--primary-color);
+            color: #0a0e17;
+            border-radius: 60px;
+            padding: 14px 40px;
+            font-weight: 600;
+            border: none;
+            margin-top: 0px;                  
+            margin-bottom: 20px;
+            transition: 0.3s;
+            cursor: pointer;
+            width: auto;
+            min-width: 160px;
+        }
+        .room-dialog .room-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px var(--primary-glow);
+        }
+        .room-dialog .room-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .error-msg {
+            color: #ff7675;
+            margin-top: 0px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            width: 100%;
+        }
+        hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); }
+
+       
+        .progress-wrapper {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 25%;                  
+            width: 80%;
+            max-width: 400px;
+            opacity: 1;
+            transition: opacity 1s ease;
+            z-index: 10001;                
+        }
+        .progress-track {
+            border: 1px solid white;
+            border-radius: 20px;
+            padding: 2px;
+            background: transparent;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 8px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 0 20px white;
+            transition: width 0.3s ease;
+        }
+
+        .danmaku-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-sub); font-size: 0.95rem; text-align: center; padding: 20px; opacity: 0.8; }
+
+        @keyframes dialogFadeUp {
+            0% { opacity: 0; transform: translate(-50%, 30px); }
+            100% { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        @keyframes slideInFromBottom {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInFromRight {
+            0% {
+                transform: translateX(20px);  
+                opacity: 0;                  
+            }
+            100% {
+                transform: translateX(0);      
+                opacity: 1;                  
+            }
+        }
+
+        .subtitle-char {
+            display: inline-block;
+            white-space: pre;          /* 保留空格 */
+            animation: slideInFromBottom 0.3s ease-out forwards;
+            }
+
+        /* ========== 移动端适配 ========== */
+        @media (max-width: 1200px) {
+            .land-left-box { flex: 2; }
+            .additional-box { flex: 8; }
+        }
+
+        @media (max-width: 768px) {
+            body::before {
+                background-image: linear-gradient(180deg, rgba(10, 14, 23, 0.95), rgba(10, 14, 23, 0.8)),
+                                  url('https://cdn.rrrosmontis.icu/background-mobile.jpg');
+            }
+            body { overflow: hidden; display: block; }
+            .topbar { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: rgba(18, 24, 38, 0.98); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border); z-index: 1000; align-items: center; justify-content: center; color: var(--text-main); }
+            .brand-text { font-size: 1.3em; font-weight: 600; letter-spacing: 2px; text-shadow: 0 0 8px var(--primary-glow); }
+            .mobile-nav-row { display: flex; position: fixed; top: 60px; left: 0; width: 100%; background: rgba(18, 24, 38, 0.95); backdrop-filter: blur(8px); padding: 8px 0; justify-content: center; z-index: 998; border-bottom: 1px solid var(--glass-border); }
+
+      
+            .main-content {
+                position: fixed; top: 50%; left: 50%; width: 100vh; height: 100vw;
+                transform: translate(-50%, -50%) rotate(90deg); padding: 8px; gap: 8px;
+                z-index: 1000; background: transparent;
+            }
+
+            .land-left-box { flex: 2.2; }
+            .additional-box { flex: 7.8; }
+
+            .land-left-box {
+                background: var(--glass-bg); backdrop-filter: blur(25px);
+                border: 1px solid var(--glass-border); border-radius: 16px;
+                padding: 10px 4px; justify-content: flex-start; box-shadow: var(--glass-shadow);
+            }
+            .additional-box { background: var(--glass-bg); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 8px; height: 100%; }
+            .video-wrapper { border-radius: 12px; }
+            .land-title-main { font-size: 0.95rem; }
+            .land-title { font-size: 0.55rem; }
+            .land-sub { font-size: 0.65rem; margin-top: 2px; letter-spacing: 2px; }
+
+            .danmaku-container { margin-top: 4px; }
+            .danmaku-list { padding: 8px; border-radius: 14px; margin-bottom: 8px; }
+            .danmaku-item { font-size: 0.7rem; margin-bottom: 8px; }
+            .danmaku-avatar { width: 22px; height: 22px; margin-right: 6px; }
+
+            .input-area {
+                width: 100%;
+                flex-wrap: nowrap;
+                padding: 4px 6px 4px 14px;
+                margin-bottom: 6px;
+                border-radius: 40px;
+            }
+            .input-area input {
+                font-size: 0.75rem;
+                padding: 7px 0;
+                min-width: 0;
+                margin: auto 0;    
+            }
+
+            .send-btn { width: 38px; height: 38px; font-size: 1.5rem; }
+            .send-btn span { transform: translateY(-2px); }
+
+            .powered-footer { font-size: 0.6rem; }
+
+            .footer { display: block; position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(18, 24, 38, 0.98); backdrop-filter: blur(10px); border-top: 1px solid var(--glass-border); padding: 12px 0; text-align: center; z-index: 999; color: var(--text-sub); }
+            .mobile-footer { display: flex; justify-content: center; gap: 8px; font-size: 0.9em; }
+            .mobile-footer a { color: var(--primary-color); text-decoration: none; }
+
+            .pc-only { display: none; }
+            .mobile-only { display: flex; }
+
+            input.room-input { border: 2px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; width: 100%; }
+            input.room-input:focus { border-color: var(--primary-color); }
+
+            .model-loading-overlay { font-size: 20px; }
+
+            .land-left-box,
+            .additional-box {
+                min-width: 0; 
+            }
+
+          
+            .room-dialog {
+                top: 15%;            
+                width: 85%;
+                padding: 25px 15px;
+            }
+            .progress-wrapper {
+                bottom: 20%;        
+                width: 85%;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <!-- 左侧面板 -->
+        <div class="land-left-box">
+            <div class="land-top-text">
+                <br>
+                <div class="land-title-main">𝓡𝓸𝔂𝓲𝓻𝓲𝓷</div>
+                <div class="land-title-main">𝓡𝓸𝓼𝓶𝓸𝓷𝓽𝓲𝓼</div>
+                <br>
+                <hr style="width: 80%; margin: 0 auto;">
+                <br class="pc-only">
+                <img src="https://cdn.rrrosmontis.icu/tsukuyomi/main-logo.png" alt="TSUKUYOMI Logo" style="width: 85%; filter: drop-shadow(0 0 8px rgba(255,255,255,0.2));">
+                <br><br class="pc-only">
+                <hr style="width: 80%; margin: 0 auto;">
+                <br>
+                <div class="land-sub">- 𝐑𝐮𝐧𝐚𝐦𝐢 𝐘𝐚𝐜𝐡𝐢𝐲𝐨 -</div>
+            </div>
+
+            <!-- 弹幕容器 -->
+            <div class="danmaku-container">
+                <div class="danmaku-list" id="danmakuList"></div>
+                <!-- 输入区 -->
+                <div class="input-area">
+                    <input type="text" id="danmakuInput" placeholder="发送弹幕..." maxlength="20" disabled>
+                    <button class="send-btn" id="sendDanmakuBtn" disabled><span>↑</span></button>
+                </div>
+                <div class="powered-footer">Powered by <a href="https://github.com/ossrs/srs" target="_blank">SRS</a> · Live2D</div>
+            </div>
+        </div>
+
+        <!-- 右侧 Live2D 容器 (video-wrapper 背景图已改为 cover) -->
+        <div class="additional-box">
+            <div class="video-wrapper">
+                <div id="loadingOverlay" class="model-loading-overlay">八千代正在赶来的路上...</div>
+                <canvas id="live2d-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全屏用户名遮挡层 (纯色背景) -->
+    <div id="roomOverlay" class="room-overlay">
+        <div class="room-dialog">
+            <img src="https://cdn.rrrosmontis.icu/tsukuyomi/main-logo.png" alt="TSUKUYOMI Logo" style="width: 100%; margin-bottom: 20px;">
+            <p>- 𝐑𝐮𝐧𝐚𝐦𝐢 𝐘𝐚𝐜𝐡𝐢𝐲𝐨 -</p>
+            <br><br>
+            <input type="text" id="usernameInput" class="room-input" placeholder="输入用户名" autofocus>
+            <br>
+            <button id="enterLiveBtn" class="room-button" disabled>进入直播</button>
+            <div id="nameError" class="error-msg"></div>
+        </div>
+        <!-- 进度条移出dialog，绝对定位在下方1/4处 -->
+        <div id="progressWrapper" class="progress-wrapper">
+            <div class="progress-track">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主程序代码 -->
+    <script type="text/javascript" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# 排除编译产物 / 第三方源码 / 测试媒体
+.claude/
+__pycache__/
+*.pyc
+trunk/objs/
+trunk/3rdparty/
+*.flv
+
+# 部署运行时产物
+danmaku/venv/
+*.log
