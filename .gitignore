@@ -9,6 +9,11 @@ __pycache__/
 *.exe
 objs/
 
+# 备份文件：一律不入库
+*.bak
+*.bak.*
+*.before-*
+
 # 系统杂物
 .DS_Store
 Thumbs.db

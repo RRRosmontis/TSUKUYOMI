@@ -36,6 +36,7 @@
 - 二进制：`danmaku/dist/danmaku.exe`（48.6 MB）、`SRS/objs/srs.exe`（35 MB）、`SRS/uninst.exe`
 - 运行日志：`*.log`（含 SRS 侧约 330 MB 的 nssm 日志、danmaku/live2d/live-api 日志）
 - 运行时产物：`__pycache__/`、`*.pyc`、`*.db`（`live.db`、`live-api/live.db`）
+- 备份文件：`*.bak`、`*.bak.*`、`*.before-*`（`srs.conf.bak.202610102145`、`live_api.py.bak.20260927174500`、`run-8000backend.bat.bak`、`config.before-secondary-20261007-1840.bak`、`config.json.before-443-20261007-201756` 共 5 个，已从仓库删除并写入 `.gitignore`）
 - 构建目录：`SRS/objs/`（Cygwin 运行库与编译输出）
 - 两个上游仓库的 `.git/`（本仓库是全新历史）
 
@@ -48,11 +49,9 @@
 | `backends/windows/live/live-api/secrets.json` | bj `C:\call\backends\live\live-api` |
 | `backends/windows/live/live-api/live_svc_token.txt` | 同上 |
 | `backends/windows/live/live-api/config.json` | 同上 |
-| `backends/windows/live/live-api/config.json.before-443-20261007-201756` | 同上（历史备份） |
-| `backends/windows/live/live-api/config.before-secondary-20261007-1840.bak` | 同上（历史备份） |
 | `backends/linux/danmaku/danmaku_auth.json` | `srs-and-danmaku-linux` 仓库 |
 
-> 注意：Windows 侧的 `SRS/conf/srs.conf`（及 `srs.conf.bak.202610102145`）是线上实际在用的 SRS 配置，其中包含 http_hooks 回调地址等部署参数，本仓库**原样保留**。若日后要公开或共享此仓库，请先复核该文件。
+> 注意：Windows 侧的 `SRS/conf/srs.conf` 是线上实际在用的 SRS 配置，其中包含 http_hooks 回调地址等部署参数，本仓库**原样保留**。若日后要公开或共享此仓库，请先复核该文件。
 
 ## 后续接入 remote
 
