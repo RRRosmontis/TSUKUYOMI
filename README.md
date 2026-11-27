@@ -3,7 +3,7 @@
 把 live.rrrosmontis.icu 直播链路的三侧代码（前端 / 弹幕端 / 后端）收进一个仓库，便于统一版本管理与后续迁移。
 
 建立时间：2026-11-27（Asia/Shanghai）
-当前状态：**仅本地仓库，未配置任何 remote，未推送**。
+当前状态：已推送至 **GitHub `RRRosmontis/TSUKUYOMI`**（分支 `main`），公开仓库。
 
 ## 目录结构
 
@@ -53,12 +53,23 @@
 
 > 注意：Windows 侧的 `SRS/conf/srs.conf` 是线上实际在用的 SRS 配置，其中包含 http_hooks 回调地址等部署参数，本仓库**原样保留**。若日后要公开或共享此仓库，请先复核该文件。
 
-## 后续接入 remote
+## 远程仓库
+
+| 项 | 内容 |
+|---|---|
+| 远程 | `https://github.com/RRRosmontis/TSUKUYOMI`（公开） |
+| 分支 | `main` |
+| 推送方式 | HTTPS + 账号级 PAT（存放于操作机 `~/.git-credentials`，`credential.helper=store`） |
+
+日常同步：
 
 ```bash
 cd /tmp/live-stack
-git remote add origin https://git.rrrosmontis.icu/RoyirinRosmontis/<repo>.git
-git push -u origin main
+git add -A && git commit -m "..." && git push
 ```
 
-推送前建议：确认上表中被清空的凭据文件不会被其他位置的备份重新带入；若推送公开仓库，先复核 `backends/windows/SRS/conf/srs.conf`。
+维护提醒：
+
+1. 本仓库为**公开**仓库，提交前务必确认没有把凭据带回来（上表中的占位文件保持 0 字节）。
+2. `backends/windows/SRS/conf/srs.conf` 是线上在用的 SRS 配置，含 http_hooks 回调地址等部署参数，公开可见，修改前请复核是否含敏感值。
+3. `.gitignore` 已拦截 `*.log`、`*.db`、`*.pyc`、`*.exe`、`objs/`、`*.bak`、`*.bak.*`、`*.before-*`。
